@@ -18,6 +18,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.TilePane;
@@ -98,20 +100,18 @@ public class CalculatorGui extends Application implements AbstractCalculatorView
 		Scene scene = new Scene(titledPane);
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		
-									
-		// TODO - find a way to pass an instance of this javafx application from an outer class
-		Calculator calculatorModel = new Calculator();
-		CalculatorController calculatorController = new CalculatorController(calculatorModel, this);
-		
-//		setMnemonics(btAdd, KeyCode.A);
-//		setMnemonics(btSub, KeyCode.S);
-//		setMnemonics(btDiv, KeyCode.D);
-//		setMnemonics(btMul, KeyCode.M);
-//		setMnemonics(btCompare, KeyCode.C);
-//		setMnemonics(btUndo, KeyCode.Z);
-//		setMnemonics(btRedo, KeyCode.Y);
+														
+		setMnemonics(btAdd, KeyCode.A);
+		setMnemonics(btSub, KeyCode.S);
+		setMnemonics(btDiv, KeyCode.D);
+		setMnemonics(btMul, KeyCode.M);
+		setMnemonics(btCompare, KeyCode.C);
+		setMnemonics(btUndo, KeyCode.Z);
+		setMnemonics(btRedo, KeyCode.Y);
 	
+		// TODO - find a way to pass an instance of this javafx application from an outer class
+				Calculator calculatorModel = new Calculator();
+				new CalculatorController(calculatorModel, this);
 
 	/////////////// Button Action Listeners  ////////////
 	
@@ -184,22 +184,36 @@ public class CalculatorGui extends Application implements AbstractCalculatorView
 	
 	} // end of start() method
 	
-	
+	private void setMnemonics(Button button, KeyCode kc) {
+		Scene scene = button.getScene();
+		if (scene == null) {
+			throw new IllegalArgumentException(
+					"setSaveAccelerator must be called when a"
+							+ " button is attached to a scene");
+		}
+		button.setMnemonicParsing(true);
+		scene.getAccelerators().put(
+				new KeyCodeCombination(kc, KeyCombination.CONTROL_DOWN),
+				new Runnable() {
+					@Override
+					public void run() {
+						button.fire();
+					}
+				});
+	}
 	
 
-	protected void createRedoButtonEvent() {
-		// TODO Auto-generated method stub		
+	public void createRedoButtonEvent() {
+		for (CalculatorViewEventsListener listener : allListeners) {
+			listener.fireRedoButtonEvent();
+		}		
 	}
 
-
-
-
-	protected void createUndoButtonEvent() {
-		// TODO Auto-generated method stub		
+	public void createUndoButtonEvent() {
+		for (CalculatorViewEventsListener listener : allListeners) {
+			listener.fireUndoButtonEvent();
+		}		
 	}
-
-
-
 
 	public void createCompareButtonEvent() {
 		for (CalculatorViewEventsListener listener : allListeners) {
@@ -211,9 +225,6 @@ public class CalculatorGui extends Application implements AbstractCalculatorView
 		
 	}
 
-
-
-
 	public void createDivisionButtonEvent() {
 		for (CalculatorViewEventsListener listener : allListeners) {
 			listener.fireDivisionButtonEvent(
@@ -223,9 +234,6 @@ public class CalculatorGui extends Application implements AbstractCalculatorView
 		}
 		
 	}
-
-
-
 
 	public void createMultiplicationButtonEvent() {
 		for (CalculatorViewEventsListener listener : allListeners) {
@@ -237,9 +245,6 @@ public class CalculatorGui extends Application implements AbstractCalculatorView
 		
 	}
 
-
-
-
 	public void createSubstractionButtonEvent() {
 		for (CalculatorViewEventsListener listener : allListeners) {
 			listener.fireSubstractionButtonEvent(
@@ -249,9 +254,6 @@ public class CalculatorGui extends Application implements AbstractCalculatorView
 		}
 		
 	}
-
-
-
 
 	public void createAdditionButtonEvent() {
 		for (CalculatorViewEventsListener listener : allListeners) {
@@ -305,7 +307,6 @@ public class CalculatorGui extends Application implements AbstractCalculatorView
 		
 	}
 
-
 	@Override
 	public void showCompareResult(String c1, String c2,
 			String sign) {
@@ -316,6 +317,23 @@ public class CalculatorGui extends Application implements AbstractCalculatorView
 		else
 			tfResult.setText(c1 + " is equal to " + c2);
 					
+	}
+
+	@Override
+	public void noPreviousOperations() {
+		tfResult.setText("No previous actions.");		
+	}
+
+	@Override
+	public void noFurtherOperations() {
+		tfResult.setText("No further actions.");
+		
+	}
+
+	@Override
+	public void wrongInput() {
+		tfResult.setText("Wrong Input, Be sure to enter Integers");
+		
 	}
 	
 }

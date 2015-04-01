@@ -17,4 +17,10 @@ public interface AbstractCalculatorView {
 	void showDivisionResult(String c1, String c2, String result);
 
 	void showCompareResult(String c1, String c2, String sign);
+
+	void noPreviousOperations();
+
+	void noFurtherOperations();
+
+	void wrongInput();
 }

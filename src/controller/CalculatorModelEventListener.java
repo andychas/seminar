@@ -20,5 +20,11 @@ public interface CalculatorModelEventListener extends Serializable {
 
 	void addCompareResultToView(String c1, String c2, String result);
 
+	void fireNoPreviousOperationsEvent();
+
+	void fireNoFurtherOperationsEvent();
+
+	void fireWrongInputEvent();
+
 
 }

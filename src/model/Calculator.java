@@ -1,8 +1,6 @@
 package model;
-
-
+import java.util.Stack;
 import java.util.Vector;
-
 import controller.CalculatorController;
 import controller.CalculatorModelEventListener;
 
@@ -11,16 +9,19 @@ public class Calculator {
 		    ADDITION, SUBTRACTION , MULTIPLICATION, DIVISION, COMPARE
 		}
 
+	private Stack<CalcOperation> operationsStack;
+	private Stack<CalcOperation> undoOperationsStack;
 	private Vector<CalculatorModelEventListener> allListeners;
 	long numerator1, denumerator1, numerator2, denumerator2;
 	RationalNumbers c1, c2;
 	long result;
+	int noFurtherActionsFlag; // for edge cases
 	
 
-	
-	
 	public Calculator(){
 		allListeners = new Vector<CalculatorModelEventListener>();
+		operationsStack = new Stack<CalcOperation>();
+		undoOperationsStack = new Stack<CalcOperation>();
 	}
 
 	
@@ -35,9 +36,6 @@ public class Calculator {
 		return allListeners;
 	}
 
-
-
-
 	public void calculate(Operation operation, String n1,
 			String d1, String n2, String d2) {	
 		
@@ -48,7 +46,10 @@ public class Calculator {
 			denumerator2 = new Integer(d2).intValue();
 			
 		} catch (Exception e) {
-			// TODO: handle (NOT INTEGER) exception
+			for (CalculatorModelEventListener listener : allListeners) {
+				listener.fireWrongInputEvent();
+			}
+			return;
 		}
 		
 		
@@ -71,13 +72,15 @@ public class Calculator {
 		
 		switch (operation) {
 		case ADDITION:
+			addCalcOperation(new CalcOperation(c1,c2,Operation.ADDITION));
 			for (CalculatorModelEventListener listener : allListeners) {
 				listener.addAdditionResultToView(
-						c1.toString(),c2.toString(), (c1.add(c2)).toString());						  						
+						c1.toString(),c2.toString(), (c1.add(c2)).toString());	
 			}
 			break;
 			
 		case SUBTRACTION:
+			addCalcOperation(new CalcOperation(c1,c2,Operation.SUBTRACTION));
 			for (CalculatorModelEventListener listener : allListeners) {
 				listener.addSubstructionResultToView(
 						c1.toString(),c2.toString(), (c1.subtract(c2)).toString());
@@ -86,6 +89,7 @@ public class Calculator {
 			break;
 			
 		case MULTIPLICATION:
+			addCalcOperation(new CalcOperation(c1,c2,Operation.MULTIPLICATION));
 			for (CalculatorModelEventListener listener : allListeners) {
 				listener.addMultiplicationResultToView(
 						c1.toString(),c2.toString(), (c1.multiply(c2)).toString());
@@ -93,6 +97,7 @@ public class Calculator {
 			
 			break;
 		case DIVISION:
+			addCalcOperation(new CalcOperation(c1,c2,Operation.DIVISION));
 			for (CalculatorModelEventListener listener : allListeners) {
 				listener.addDivisionResultToView(
 						c1.toString(),c2.toString(), (c1.divide(c2)).toString());
@@ -100,6 +105,7 @@ public class Calculator {
 			
 			break;
 		case COMPARE:
+			addCalcOperation(new CalcOperation(c1,c2,Operation.COMPARE));
 			String sign;
 			if(c1.compareTo(c2) > 0)
 				sign = ">";
@@ -160,5 +166,59 @@ public class Calculator {
 		calculate(Operation.COMPARE,numerator1,denumerator1,numerator2,denumerator2 );
 		
 	}
+	
+	public void undoOperation() {
+		CalcOperation op = getPrev();
+		if(op == null){
+			for (CalculatorModelEventListener listener : allListeners) {
+				listener.fireNoPreviousOperationsEvent();
+			}
+		}
+		else
+		calculate(op.operation,Long.toString(c1.getNumerator()),Long.toString(c1.getDenominator()),
+				Long.toString(c2.getNumerator()),Long.toString(c2.getDenominator()));		
+	}
+
+	public void redoOperation() {
+		CalcOperation op = getNext();
+		if(op == null){
+			for (CalculatorModelEventListener listener : allListeners) {
+				listener.fireNoFurtherOperationsEvent();
+			}
+		}
+		else
+		calculate(op.operation,Long.toString(c1.getNumerator()),Long.toString(c1.getDenominator()),
+				Long.toString(c2.getNumerator()),Long.toString(c2.getDenominator()));
+		
+	}
+	
+	public void addCalcOperation(CalcOperation state) {
+		if (state != null) {			
+			operationsStack.add(state);			
+		}
+	}
+	public CalcOperation getPrev() {
+		if (operationsStack.isEmpty()) {
+			return null; 
+		}
+		else if(noFurtherActionsFlag == 1 && !operationsStack.isEmpty() ){
+			noFurtherActionsFlag = 0;
+			return operationsStack.pop();
+		}
+		undoOperationsStack.add(operationsStack.pop());
+		if (operationsStack.isEmpty()) {
+			return null; 
+		}
+		return operationsStack.pop();
+	}
+
+	public CalcOperation getNext() {
+		if (undoOperationsStack.isEmpty()) {
+			noFurtherActionsFlag = 1;
+			return null; 
+		}
+		return undoOperationsStack.pop();
+	}
+
 
 }

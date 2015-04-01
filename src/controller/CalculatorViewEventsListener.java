@@ -19,6 +19,10 @@ public interface CalculatorViewEventsListener extends Serializable{
 
 	void fireCompareButtonEvent(String numerator1, String denumerator1,
 							String numerator2, String denumerator2);
+
+	void fireUndoButtonEvent();
+
+	void fireRedoButtonEvent();
 	
 
 }

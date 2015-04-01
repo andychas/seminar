@@ -50,12 +50,30 @@ public class CalculatorController implements CalculatorModelEventListener, Calcu
 		calculatorView.denumeratorIsZeroEvenet();
 		
 	}
+	@Override
+	public void fireWrongInputEvent() {
+		calculatorView.wrongInput();
+		
+	}
 
 	@Override
 	public void fireDivideNumerator2isZero() {
 		calculatorView.divideNumerator2isZero();
 		
 	}
+	
+	@Override
+	public void fireNoPreviousOperationsEvent() {
+		calculatorView.noPreviousOperations();
+		
+	}
+	
+	@Override
+	public void fireNoFurtherOperationsEvent() {
+		calculatorView.noFurtherOperations();
+		
+	}
+	
 
 	@Override
 	public void fireSubstractionButtonEvent(String numerator1,
@@ -117,6 +135,17 @@ public class CalculatorController implements CalculatorModelEventListener, Calcu
 		
 	}
 
+	@Override
+	public void fireUndoButtonEvent() {
+		calculatorModel.undoOperation();
+		
+	}
+
+	@Override
+	public void fireRedoButtonEvent() {
+		calculatorModel.redoOperation();
+		
+	}
 
 
 
